@@ -4,25 +4,19 @@ var url = require('url');
 // 우리는 'url'이라는 모듈을 url이라는 변수를 통해서 사용할 것이라고 nodejs에게 알려주는 것이다.
 
 var app = http.createServer(function(request,response){
-    var _url = request.url;
-    var queryData = url.parse(_url, true).query;
-    let title = queryData.id;
-    // Web Page의 title을 동적으로 바꿔주기 위한 변수 생성
-    if(_url == '/'){
-      title = 'Welcome';
-      // _url = '/index.html';
-      // // 홈으로 갔을 때 index.html을 실행하게 한다.
-    }
-    if(_url == '/favicon.ico'){
-        response.writeHead(404);
-        response.end();
-        return;
-    }
-    response.writeHead(200);
-    fs.readFile(`data/${queryData.id}`, 'utf8', (err, data) => {
+  var _url = request.url;
+  var queryData = url.parse(_url, true).query;
+  const pathname = url.parse(_url, true).pathname;
+  let title = queryData.id;
+
+  console.log(url.parse(_url, true));
+  console.log(pathname);
+
+  if(pathname == '/') {
+    // path가 없는 경로를 선택했다면 아래의 코드 실행
+    fs.readFile(`data/${title}`, `utf8`, (err, data) => {
       // data 폴더에 있는 title의 명을 가진 파일을 utf8 형식으로 뽑아
       if (err) throw err;
-      const description = data;
       const template = `
       <!doctype html>
       <html>
@@ -51,14 +45,23 @@ var app = http.createServer(function(request,response){
             <div id="article">
               <h2>${title}이란 무엇인가</h2>
               <p>
-                ${description}
+                ${data}
               </p>
             </div>
           </div>
         </body>
       </html>
       `; // template HTML 코드 내용들을 data 인자를 활용할 수 있게끔 이 안으로 옮겨준다.
+      response.writeHead(200);
+      // 파일이 성공적으로 전송 했다고 Web Server가 Web Browser에게 알려주는 약속된 언어
       response.end(template);
     });
+  } else {
+    console.log("그 외의 경로");
+    // 그 외의 경로로 접속했다면
+    response.writeHead(404);
+    // 파일 전송이 실패 했다고 Web Server가 Web Browser에게 알려주는 약속된 언어
+    response.end('Not found');
+  }
 });
 app.listen(3000);
