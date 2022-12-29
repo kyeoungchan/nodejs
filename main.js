@@ -16,7 +16,7 @@ var app = http.createServer(function(request,response){
         // data 폴더에 있는 title의 명을 가진 파일을 utf8 형식으로 뽑아
         // if (err) throw err;
         const title = 'Welcome';
-        let description = 'Hello, Node.js';
+        const description = 'Hello, Node.js';
         const template = `
         <!doctype html>
         <html>
@@ -43,7 +43,7 @@ var app = http.createServer(function(request,response){
                 </ul>
               </div>
               <div id="article">
-                <h2>${title}이란 무엇인가</h2>
+                <h2>${title}</h2>
                 <p>
                   ${description}
                 </p>
