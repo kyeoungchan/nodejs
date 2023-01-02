@@ -3,9 +3,9 @@ const fs = require('fs');
 // readFileSync
 // console.log('A');
 // const result = fs.readFileSync('syntax/sample.txt', 'utf8');
+// sysntax 폴더 밖에서 실행한다는 뜻
 // console.log(result);
 // console.log('C');
-// sysntax 폴더 밖에서 실행한다는 뜻
 
 // readFile
 console.log('A');
