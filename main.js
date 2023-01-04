@@ -4,7 +4,7 @@ const url = require('url');
 // 우리는 'url'이라는 모듈을 url이라는 변수를 통해서 사용할 것이라고 nodejs에게 알려주는 것이다.
 const qs = require('querystring');
 
-function templateHTML(title, list, body) {
+function templateHTML(title, list, body, control) {
   // HTML 코드 사용의 반복을 줄이기 위한 함수
   // template HTML 코드 내용들을 data 인자를 활용할 수 있게끔 이 안으로 옮겨준다.
   return `
@@ -26,7 +26,7 @@ function templateHTML(title, list, body) {
             nightDayHandler(this);
           ">
           ${list}
-          <a href="/create">create</a>
+          ${control}
         </div>
         <div id="article">
           ${body}
@@ -69,8 +69,10 @@ const app = http.createServer(function(request,response){
           // if (err) throw err;
           const title = 'Welcome';
           const list = templeList(data);
-          const template = templateHTML(title, list, `<h2>${title}</h2>
-          <p>${description}</p>`);
+          const template = templateHTML(title, list,
+            `<h2>${title}</h2><p>${description}</p>`,
+            `<a href="/create">create</a>`
+          );
           response.writeHead(200);
           // 파일이 성공적으로 전송 했다고 Web Server가 Web Browser에게 알려주는 약속된 언어
           response.end(template);
@@ -83,8 +85,10 @@ const app = http.createServer(function(request,response){
           // if (err) throw err;
           const title = queryData.id;
           const list = templeList(data);
-          const template = templateHTML(title, list, `<h2>${title}이란</h2>
-          <p>${description}</p>`);
+          const template = templateHTML(title, list,
+            `<h2>${title}이란</h2><p>${description}</p>`,
+            `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+          );
           response.writeHead(200);
           // 파일이 성공적으로 전송 했다고 Web Server가 Web Browser에게 알려주는 약속된 언어
           response.end(template);
@@ -112,7 +116,7 @@ const app = http.createServer(function(request,response){
               <!-- 전송 버튼이 생겨난다. -->
             </p>
           </form>
-          `);
+        `, '');
         response.writeHead(200);
         // 파일이 성공적으로 전송 했다고 Web Server가 Web Browser에게 알려주는 약속된 언어
         response.end(template);
@@ -132,10 +136,14 @@ const app = http.createServer(function(request,response){
       // post라는 변수에 데이터값을 저장한다.
       const title = post.title;
       const description = post.description;
-      console.log(post);
+      fs.writeFile(`data/${title}`, description, 'utf8', function(err) {
+        // 파일 저장이 성공적으로 됐을 때 이 CallBack 함수가 호출된다.
+        response.writeHead(302, {location : `/?id=${title}`});
+        // 첫 번째 인자인 302는 일시적으로 Redirect한다는 의미를 내포한다.
+        response.end();
+        // Page에 띄울 것이 없으므로 인자는 생략한다.
+      });
     });
-    response.writeHead(200);
-    response.end('Success');
   } else {
     // 그 외의 경로로 접속했다면
     response.writeHead(404);
