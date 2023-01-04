@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const url = require('url');
 // 우리는 'url'이라는 모듈을 url이라는 변수를 통해서 사용할 것이라고 nodejs에게 알려주는 것이다.
+const qs = require('querystring');
 
 function templateHTML(title, list, body) {
   // HTML 코드 사용의 반복을 줄이기 위한 함수
@@ -51,6 +52,9 @@ function templeList(data) {
 }
 
 const app = http.createServer(function(request,response){
+  // Nodejs로 Web Browser가 들어올 때마다 createServer에 CallBack함수를 Nodejs가 호출하는데,
+  // request는 요청할 때 Web Browser가 보낸 정보
+  // response는 응답할 때 우리가 Web Browser에 전송할 정보
   const _url = request.url;
   const queryData = url.parse(_url, true).query;
   const pathname = url.parse(_url, true).pathname;
@@ -95,7 +99,7 @@ const app = http.createServer(function(request,response){
         const title = 'WEB - Create';
         const list = templeList(data);
         const template = templateHTML(title, list, `
-          <form action="http://localhost:3000/process_create" method="post">
+          <form action="http://localhost:3000/create_process" method="post">
             <!-- 입력한 정보를 action값의 서버 주소로 전송하고 싶다는 의미 -->
             <!-- 서버에서 전송받은 정보를 활용하려면 각 정보에 name 속성값이 필요하다. -->
             <p><input type="text" name="title" placeholder="title"></p>
@@ -114,6 +118,24 @@ const app = http.createServer(function(request,response){
         response.end(template);
       });
     });
+  } else if(pathname=='/create_process') {
+    let body = '';
+    request.on('data', function(data) {
+      // Web Broser가 Post 방식으로 Data를 처리할 때, 한 번에 너무 방대한 양의 Data를 처리하면 프로그램이 꺼지거나 컴퓨터에 무리갈 수 있다.
+      // 그것에 대비하기 위해 Data를 조각조각내 처리하는 request.on()의 CallBack함수를 사용한다.
+      body += data;
+      // CallBack이 실행될 때마다 data를 body에 추가한다.
+    });
+    request.on('end', function() {
+      // 조각조각내 들어올 Data가 더이상 없을 때 호출되는 CallBack함수다.
+      const post = qs.parse(body);
+      // post라는 변수에 데이터값을 저장한다.
+      const title = post.title;
+      const description = post.description;
+      console.log(post);
+    });
+    response.writeHead(200);
+    response.end('Success');
   } else {
     // 그 외의 경로로 접속했다면
     response.writeHead(404);
