@@ -87,7 +87,14 @@ const app = http.createServer(function(request,response){
           const list = templeList(data);
           const template = templateHTML(title, list,
             `<h2>${title}이란</h2><p>${description}</p>`,
-            `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+            `
+            <a href="/create">create</a>
+            <a href="/update?id=${title}">update</a>
+            <form action="/delete_process" method="post">
+              <input type="hidden" name="id" value="${title}">
+              <input type="submit" value="delete">
+            </form>
+            `
           );
           response.writeHead(200);
           // 파일이 성공적으로 전송 했다고 Web Server가 Web Browser에게 알려주는 약속된 언어
@@ -195,6 +202,20 @@ const app = http.createServer(function(request,response){
         });
       });
       console.log(post);
+    });
+  } else if(pathname == '/delete_process') {
+    let body = '';
+    request.on('data', function(data) {
+      body += data;
+    });
+    request.on('end', function() {
+      const post = qs.parse(body);
+      const id = post.id;
+      fs.unlink(`data/${id}`, (err) => {
+        // 삭제가 완료되면 Home Page로 이동한다.
+        response.writeHead(302, {location : `/`});
+        response.end();
+      });
     });
   } else {
     // 그 외의 경로로 접속했다면
